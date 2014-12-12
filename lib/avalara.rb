@@ -100,7 +100,32 @@ module Avalara
   rescue Exception => e
     raise Error.new(e)
   end
-  
+
+  def self.cancel_tax(invoice, args)
+    uri = [endpoint, version, 'tax', 'cancel'].join('/')
+
+    cancel_tax_body = {
+      "CompanyCode" => invoice.CompanyCode,
+      "DocType" => invoice.DocType,
+      "DocCode" => invoice.DocCode,
+      "CancelCode" => args[:cancel_code],
+    }
+
+    response = API.post(uri,
+      :body => cancel_tax_body.to_json,
+      :headers => API.headers_for(cancel_tax_body.to_json.length),
+      :basic_auth => authentication
+    )
+
+    return response
+  rescue Timeout::Error => e
+    raise TimeoutError.new(e)
+  rescue ApiError => e
+    raise e
+  rescue Exception => e
+    raise Error.new(e)
+  end
+
   private
 
   def self.authentication
